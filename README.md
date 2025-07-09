@@ -200,10 +200,6 @@ python -m http.server -d _build/html
 6. Push to the branch (`git push origin feature/amazing-feature`)
 7. Open a Pull Request
 
-## 📄 License
-
-This template is open source and available under the MIT License.
-
 ## 🙏 Acknowledgments
 
 - Built with best practices from the Python community
