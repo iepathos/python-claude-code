@@ -4,7 +4,7 @@ Analyze the codebase for technical debt and perform comprehensive cleanup includ
 
 ## Variables
 
-SCOPE: $ARGUMENTS (optional - specify scope like "internal/camera", "ui", "tests", or "all" for entire codebase)
+SCOPE: $ARGUMENTS (optional - specify scope like "src/services", "tests", "scripts", or "all" for entire codebase)
 
 ## Execute
 
@@ -13,18 +13,18 @@ SCOPE: $ARGUMENTS (optional - specify scope like "internal/camera", "ui", "tests
 1. **Code Organization Analysis**
    - Scan for misplaced files and inconsistent package structure
    - Identify files that should be moved to better locations
-   - Check for circular dependencies and import cycles
-   - Analyze package cohesion and coupling
+   - Check for circular imports and dependency cycles
+   - Analyze module cohesion and coupling
 
 2. **Dead Code Detection**
-   - Find unused functions, variables, and constants
+   - Find unused functions, classes, and variables
    - Identify unreachable code paths
    - Locate abandoned files and empty directories
    - Check for commented-out code blocks
 
 3. **Dependency Audit**
-   - Review go.mod for unused dependencies
-   - Check for duplicate functionality across packages
+   - Review requirements.txt/pyproject.toml for unused dependencies
+   - Check for duplicate functionality across modules
    - Identify outdated or vulnerable dependencies
    - Find missing dependencies that should be explicit
 
@@ -34,11 +34,11 @@ SCOPE: $ARGUMENTS (optional - specify scope like "internal/camera", "ui", "tests
    - Identify large files that should be split
    - Check for inconsistent naming conventions
 
-5. **Error Handling Patterns**
-   - Find inconsistent error handling approaches
-   - Identify missing error checks
-   - Check for panic usage that should be errors
-   - Review error wrapping and context
+5. **Type Annotation Coverage**
+   - Find functions missing type hints
+   - Identify incomplete or incorrect type annotations
+   - Check for Any types that could be more specific
+   - Review return type consistency
 
 ### Phase 2: Cleanup Strategy Planning
 
@@ -62,25 +62,25 @@ SCOPE: $ARGUMENTS (optional - specify scope like "internal/camera", "ui", "tests
 ### Phase 3: Automated Cleanup
 
 1. **Safe Automated Fixes**
-   - Run `go mod tidy` to clean up dependencies
-   - Execute `gofmt` and `goimports` for formatting
-   - Remove unused imports and variables
-   - Fix simple linting issues
+   - Run `black` for consistent formatting
+   - Execute `isort` for import organization
+   - Apply `autoflake` to remove unused imports
+   - Fix simple linting issues with `autopep8`
 
 2. **Code Organization**
-   - Move misplaced files to appropriate packages
+   - Move misplaced files to appropriate modules
    - Rename files to follow naming conventions
    - Reorganize package structure if needed
-   - Update import paths after moves
+   - Update import statements after moves
 
 3. **Dead Code Removal**
-   - Remove unused functions and variables
+   - Remove unused functions and classes
    - Delete commented-out code blocks
    - Remove empty files and directories
    - Clean up unused test files
 
 4. **Dependency Optimization**
-   - Remove unused dependencies from go.mod
+   - Remove unused dependencies from requirements files
    - Consolidate duplicate functionality
    - Update outdated dependencies (with testing)
    - Add missing explicit dependencies
@@ -93,17 +93,17 @@ SCOPE: $ARGUMENTS (optional - specify scope like "internal/camera", "ui", "tests
    - Reduce function parameter counts
    - Improve function naming and documentation
 
-2. **Package Structure**
-   - Reorganize packages for better cohesion
-   - Fix circular dependencies
+2. **Module Structure**
+   - Reorganize modules for better cohesion
+   - Fix circular imports
    - Ensure proper separation of concerns
-   - Improve interface definitions
+   - Improve class and interface definitions
 
-3. **Error Handling Standardization**
-   - Standardize error handling patterns
-   - Add missing error checks
+3. **Exception Handling Standardization**
+   - Standardize exception handling patterns
+   - Add missing try/except blocks
    - Improve error messages and context
-   - Replace panics with proper error returns
+   - Create custom exception hierarchies
 
 4. **Code Duplication Elimination**
    - Extract common patterns into shared functions
@@ -114,30 +114,30 @@ SCOPE: $ARGUMENTS (optional - specify scope like "internal/camera", "ui", "tests
 ### Phase 5: Testing and Validation
 
 1. **Pre-cleanup Testing**
-   - Run full test suite to establish baseline
-   - Execute `go test -race ./...` for race condition detection
-   - Run benchmarks if available
+   - Run full test suite with pytest to establish baseline
+   - Execute `pytest --cov` for coverage report
+   - Run type checking with mypy
    - Perform integration testing
 
 2. **Post-cleanup Validation**
    - Run full test suite after each major change
-   - Verify no new race conditions introduced
-   - Check that benchmarks haven't regressed
-   - Validate that all packages still build
+   - Verify type checking still passes
+   - Check that coverage hasn't decreased
+   - Validate that all modules still import correctly
 
 3. **Manual Testing**
    - Test critical user flows
-   - Verify UI components still work
-   - Check camera and eye tracking functionality
+   - Verify API endpoints still work
+   - Check CLI functionality
    - Validate configuration loading
 
 ### Phase 6: Documentation and Reporting
 
 1. **Update Documentation**
-   - Update package documentation for moved files
+   - Update module docstrings for moved files
    - Fix outdated comments and examples
    - Update README if package structure changed
-   - Add missing GoDoc comments
+   - Add missing docstrings
 
 2. **Generate Cleanup Report**
    - Summary of changes made
@@ -156,22 +156,22 @@ SCOPE: $ARGUMENTS (optional - specify scope like "internal/camera", "ui", "tests
 
 ```
 /cleanup-tech-debt
-/cleanup-tech-debt "internal/camera"
-/cleanup-tech-debt "ui"
+/cleanup-tech-debt "src/services"
 /cleanup-tech-debt "tests"
+/cleanup-tech-debt "scripts"
 /cleanup-tech-debt "all"
 ```
 
 ## Cleanup Categories
 
 ### Code Organization
-- Move files to appropriate packages
+- Move files to appropriate modules
 - Rename files for consistency
-- Fix package import structures
-- Eliminate circular dependencies
+- Fix module import structures
+- Eliminate circular imports
 
 ### Dead Code Removal
-- Remove unused functions and variables
+- Remove unused functions and classes
 - Delete commented-out code
 - Remove empty files and directories
 - Clean up unused test fixtures
@@ -185,13 +185,13 @@ SCOPE: $ARGUMENTS (optional - specify scope like "internal/camera", "ui", "tests
 ### Structural Improvements
 - Refactor overly complex functions
 - Extract common utilities
-- Improve error handling patterns
+- Improve exception handling patterns
 - Standardize naming conventions
 
 ### Performance Optimizations
 - Remove inefficient algorithms
 - Optimize memory usage
-- Improve goroutine management
+- Improve async/await patterns
 - Fix resource leaks
 
 ## Safety Measures
@@ -204,8 +204,8 @@ SCOPE: $ARGUMENTS (optional - specify scope like "internal/camera", "ui", "tests
 
 2. **Testing Requirements**
    - All tests must pass before and after cleanup
-   - No new race conditions introduced
-   - Performance benchmarks maintained
+   - Type checking must pass
+   - Coverage must not decrease
    - Critical functionality verified
 
 3. **Review Process**
@@ -225,7 +225,7 @@ SCOPE: $ARGUMENTS (optional - specify scope like "internal/camera", "ui", "tests
 
 The cleanup process must:
 - Maintain all existing functionality
-- Follow Go idioms and project conventions
+- Follow PEP 8 and project conventions
 - Improve code maintainability and readability
 - Not introduce new bugs or regressions
 - Include comprehensive testing
@@ -234,9 +234,9 @@ The cleanup process must:
 ## Error Handling
 
 - If tests fail: Stop cleanup and report which tests failed
-- If build fails: Rollback changes and report build errors
+- If build fails: Rollback changes and report errors
 - If dependencies conflict: Resolve conflicts or report for manual review
-- If race conditions detected: Fix immediately or rollback changes
+- If type checking fails: Fix type errors or rollback changes
 - If breaking changes needed: Create separate spec for major refactoring
 
 ## Output Format

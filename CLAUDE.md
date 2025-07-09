@@ -1,323 +1,535 @@
-# Claude Code Generation Guidelines for Rust Projects
+# Claude Code Generation Guidelines for Python Projects
 
 ## Project Overview
 
-This template provides a foundation for developing Rust applications with Claude Code assistance. It includes best practices for project structure, code organization, testing, and documentation that align with Rust idioms and ecosystem conventions.
+This template provides a foundation for developing Python applications with Claude Code assistance. It includes best practices for project structure, code organization, testing, and documentation that align with Python idioms and ecosystem conventions.
 
 ## Core Architecture Principles
 
-### 1. Error Handling & Resource Management
-- **Use Result types**: Prefer `Result<T, E>` over panics for recoverable errors
-- **Explicit error handling**: Use `?` operator and proper error propagation
-- **RAII pattern**: Rust's ownership system handles resource cleanup automatically
-- **Custom error types**: Create domain-specific error types using `thiserror` or `anyhow`
+### 1. Error Handling & Exception Management
+- **Use specific exceptions**: Prefer specific exception types over generic Exception
+- **EAFP principle**: "Easier to Ask for Forgiveness than Permission" - use try/except rather than excessive checking
+- **Context managers**: Use `with` statements for resource management
+- **Custom exceptions**: Create domain-specific exception hierarchies
 
-```rust
-// Good example
-use anyhow::{Context, Result};
+```python
+# Good example
+from contextlib import contextmanager
+from typing import Iterator
 
-fn process_file(path: &str) -> Result<String> {
-    let content = std::fs::read_to_string(path)
-        .with_context(|| format!("Failed to read file: {}", path))?;
+class DataProcessingError(Exception):
+    """Base exception for data processing errors."""
+    pass
+
+class ValidationError(DataProcessingError):
+    """Raised when data validation fails."""
+    pass
+
+@contextmanager
+def process_file(path: str) -> Iterator[str]:
+    """Process a file with proper resource management."""
+    try:
+        with open(path, 'r') as f:
+            yield f.read()
+    except FileNotFoundError:
+        raise DataProcessingError(f"File not found: {path}")
+    except IOError as e:
+        raise DataProcessingError(f"Failed to read file: {path}") from e
+```
+
+### 2. Type Hints & Static Typing
+- **Use type hints**: Add type annotations for function signatures
+- **Generic types**: Use `typing` module for complex type hints
+- **Type checking**: Use `mypy` for static type checking
+- **Runtime validation**: Consider `pydantic` for data validation
+
+```python
+# Type hints example
+from typing import List, Dict, Optional, Union, TypeVar, Generic
+from dataclasses import dataclass
+
+T = TypeVar('T')
+
+@dataclass
+class Result(Generic[T]):
+    """Generic result wrapper."""
+    value: Optional[T] = None
+    error: Optional[str] = None
     
-    // Process content...
-    Ok(content)
-}
+    @property
+    def is_success(self) -> bool:
+        return self.error is None
+
+def process_data(
+    data: List[Dict[str, Union[str, int]]], 
+    filter_key: str
+) -> Result[List[str]]:
+    """Process data with type hints."""
+    try:
+        filtered = [
+            str(item.get(filter_key, '')) 
+            for item in data 
+            if filter_key in item
+        ]
+        return Result(value=filtered)
+    except Exception as e:
+        return Result(error=str(e))
 ```
 
-### 2. Concurrency & Thread Safety
-- **Ownership model**: Leverage Rust's ownership system for thread safety
-- **Async/await**: Use `tokio` for asynchronous programming
-- **Channel communication**: Use `mpsc` channels for thread communication
-- **Mutex/RwLock**: Use for shared mutable state when necessary
+### 3. Async/Await & Concurrency
+- **asyncio**: Use async/await for I/O-bound operations
+- **threading**: Use for CPU-bound operations with GIL limitations
+- **multiprocessing**: Use for CPU-intensive parallel processing
+- **concurrent.futures**: High-level interface for async execution
 
-```rust
-// Async example
-use tokio::time::{sleep, Duration};
+```python
+# Async example
+import asyncio
+import aiohttp
+from typing import List, Dict
 
-async fn fetch_data(url: &str) -> Result<String> {
-    let response = reqwest::get(url).await?;
-    let text = response.text().await?;
-    Ok(text)
-}
+async def fetch_data(session: aiohttp.ClientSession, url: str) -> Dict:
+    """Fetch data asynchronously."""
+    async with session.get(url) as response:
+        return await response.json()
+
+async def fetch_multiple(urls: List[str]) -> List[Dict]:
+    """Fetch multiple URLs concurrently."""
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch_data(session, url) for url in urls]
+        return await asyncio.gather(*tasks)
 ```
 
-### 3. Configuration & Dependency Injection
-- **Serde configuration**: Use `serde` for serialization/deserialization
-- **Environment variables**: Use `dotenvy` for environment configuration
-- **Dependency injection**: Pass dependencies explicitly through constructors
-- **Feature flags**: Use Cargo features for conditional compilation
+### 4. Configuration & Dependency Injection
+- **Environment variables**: Use `python-dotenv` for .env files
+- **Configuration classes**: Use `pydantic` for settings management
+- **Dependency injection**: Use explicit dependency passing or libraries like `injector`
+- **Feature toggles**: Use environment variables or configuration files
+
+```python
+# Configuration example
+from pydantic import BaseSettings, Field
+from functools import lru_cache
+
+class Settings(BaseSettings):
+    """Application settings."""
+    app_name: str = "MyApp"
+    debug: bool = Field(False, env="DEBUG")
+    database_url: str = Field(..., env="DATABASE_URL")
+    api_key: str = Field(..., env="API_KEY")
+    
+    class Config:
+        env_file = ".env"
+        case_sensitive = False
+
+@lru_cache()
+def get_settings() -> Settings:
+    """Get cached settings instance."""
+    return Settings()
+```
 
 ## File and Directory Structure
 
 ### Standard Layout
 ```
-rust-project/
+python-project/
 ├── src/                    # Source code
-│   ├── main.rs            # Binary entry point
-│   ├── lib.rs             # Library entry point
-│   ├── bin/               # Additional binary targets
-│   ├── modules/           # Application modules
-│   │   ├── mod.rs
-│   │   ├── config.rs
-│   │   └── utils.rs
-│   └── tests/             # Integration tests
-├── tests/                 # Additional integration tests
-├── benches/               # Benchmarks
-├── examples/              # Usage examples
+│   └── package_name/       # Main package
+│       ├── __init__.py
+│       ├── __main__.py     # Entry point for -m execution
+│       ├── main.py         # Main application logic
+│       ├── models/         # Data models
+│       │   ├── __init__.py
+│       │   └── user.py
+│       ├── services/       # Business logic
+│       │   ├── __init__.py
+│       │   └── auth.py
+│       ├── utils/          # Utility functions
+│       │   ├── __init__.py
+│       │   └── helpers.py
+│       └── api/            # API endpoints (if applicable)
+│           ├── __init__.py
+│           └── routes.py
+├── tests/                  # Test files
+│   ├── __init__.py
+│   ├── conftest.py        # pytest fixtures
+│   ├── unit/              # Unit tests
+│   ├── integration/       # Integration tests
+│   └── test_*.py          # Test modules
 ├── docs/                  # Documentation
-├── assets/                # Static assets
-├── target/                # Build artifacts (gitignored)
-├── Cargo.toml             # Project manifest
-├── Cargo.lock             # Dependency lock file
+│   ├── conf.py            # Sphinx configuration
+│   └── index.rst          # Documentation index
+├── scripts/               # Utility scripts
+├── data/                  # Data files (if needed)
+├── notebooks/             # Jupyter notebooks (if applicable)
+├── requirements/          # Dependency files
+│   ├── base.txt          # Base requirements
+│   ├── dev.txt           # Development requirements
+│   └── prod.txt          # Production requirements
+├── .env.example           # Example environment variables
+├── .gitignore
+├── .pre-commit-config.yaml
+├── pyproject.toml         # Project configuration
+├── setup.py               # Package setup (if distributing)
+├── setup.cfg              # Setup configuration
+├── MANIFEST.in            # Package manifest
+├── Dockerfile             # Container configuration
 └── README.md              # Project documentation
 ```
 
 ### File Naming Conventions
-- **Rust files**: Use snake_case (e.g., `user_service.rs`, `auth_handler.rs`)
-- **Test files**: Integration tests in `tests/` directory
-- **Module files**: `mod.rs` for module declarations
-- **Binary targets**: Place in `src/bin/` for additional executables
+- **Python files**: Use snake_case (e.g., `user_service.py`, `auth_handler.py`)
+- **Test files**: Prefix with `test_` (e.g., `test_user_service.py`)
+- **Constants files**: Use UPPER_CASE for module names containing constants
+- **Private modules**: Prefix with underscore (e.g., `_internal.py`)
 
 ## Code Style & Standards
 
 ### Documentation
-- **Rustdoc comments**: Use `///` for public API documentation
-- **Module documentation**: Document modules with `//!` at the top
-- **Examples**: Include code examples in documentation
-- **Cargo.toml metadata**: Include proper project metadata
+- **Docstrings**: Use Google-style or NumPy-style docstrings consistently
+- **Type hints**: Include in function signatures
+- **Module documentation**: Add module-level docstring at the top
+- **Examples**: Include usage examples in docstrings
 
-```rust
-/// Processes user authentication requests.
-///
-/// # Arguments
-///
-/// * `username` - The user's username
-/// * `password` - The user's password
-///
-/// # Returns
-///
-/// Returns `Ok(User)` if authentication succeeds, or `Err(AuthError)` if it fails.
-///
-/// # Examples
-///
-/// ```
-/// let user = authenticate("alice", "secret123")?;
-/// println!("Welcome, {}!", user.name);
-/// ```
-pub fn authenticate(username: &str, password: &str) -> Result<User, AuthError> {
-    // Implementation...
-}
+```python
+"""Module for user authentication and authorization.
+
+This module provides functions and classes for handling user
+authentication, including login, logout, and permission checking.
+"""
+
+from typing import Optional, Dict, Any
+
+def authenticate_user(username: str, password: str) -> Optional[Dict[str, Any]]:
+    """Authenticate a user with username and password.
+    
+    Args:
+        username: The user's username.
+        password: The user's password (will be hashed).
+        
+    Returns:
+        A dictionary containing user information if authentication
+        succeeds, None otherwise.
+        
+    Raises:
+        ValueError: If username or password is empty.
+        DatabaseError: If database connection fails.
+        
+    Example:
+        >>> user = authenticate_user("alice", "secret123")
+        >>> if user:
+        ...     print(f"Welcome, {user['name']}!")
+    """
+    if not username or not password:
+        raise ValueError("Username and password are required")
+    
+    # Implementation here...
+    return None
 ```
 
 ### Logging Standards
-- **Structured logging**: Use `tracing` for structured logging
-- **Log levels**: Use appropriate levels (trace, debug, info, warn, error)
-- **Contextual logging**: Include relevant context with spans
-- **Performance**: Use logging guards for expensive operations
+- **Structured logging**: Use `structlog` or Python's logging with formatters
+- **Log levels**: Use appropriate levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+- **Context**: Include relevant context in log messages
+- **Performance**: Avoid expensive operations in log statements
 
-```rust
-use tracing::{info, debug, error, instrument};
+```python
+import logging
+from functools import wraps
+from typing import Callable, Any
 
-#[instrument]
-async fn process_request(request_id: u64) -> Result<Response> {
-    debug!("Processing request {}", request_id);
-    
-    match handle_request(request_id).await {
-        Ok(response) => {
-            info!("Request {} processed successfully", request_id);
-            Ok(response)
-        }
-        Err(e) => {
-            error!("Failed to process request {}: {}", request_id, e);
-            Err(e)
-        }
-    }
-}
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+def log_execution(func: Callable) -> Callable:
+    """Decorator to log function execution."""
+    @wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        logger.info(f"Executing {func.__name__}", extra={
+            'function': func.__name__,
+            'module': func.__module__
+        })
+        try:
+            result = func(*args, **kwargs)
+            logger.info(f"Successfully executed {func.__name__}")
+            return result
+        except Exception as e:
+            logger.error(
+                f"Error in {func.__name__}: {str(e)}", 
+                exc_info=True,
+                extra={'function': func.__name__}
+            )
+            raise
+    return wrapper
 ```
 
 ### Testing Requirements
-- **Unit tests**: Include `#[cfg(test)]` modules in source files
-- **Integration tests**: Place in `tests/` directory
-- **Property testing**: Use `proptest` for property-based testing
-- **Mocking**: Use `mockall` for mocking dependencies
-- **Coverage**: Use `cargo tarpaulin` for code coverage
+- **pytest**: Use pytest as the primary testing framework
+- **Coverage**: Maintain high test coverage (aim for >80%)
+- **Fixtures**: Use pytest fixtures for test setup
+- **Mocking**: Use `unittest.mock` or `pytest-mock`
+- **Property testing**: Use `hypothesis` for property-based testing
 
-```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use proptest::prelude::*;
+```python
+# tests/test_user_service.py
+import pytest
+from unittest.mock import Mock, patch
+from hypothesis import given, strategies as st
 
-    #[test]
-    fn test_basic_functionality() {
-        let result = process_data("test input");
-        assert!(result.is_ok());
-    }
+from src.package_name.services.user import UserService
+from src.package_name.models.user import User
 
-    proptest! {
-        #[test]
-        fn test_property_based(input in ".*") {
-            let result = validate_input(&input);
-            prop_assert!(result.is_ok() || result.is_err());
-        }
-    }
-}
-```
+@pytest.fixture
+def user_service():
+    """Create a UserService instance for testing."""
+    return UserService()
 
-## Platform-Specific Considerations
+@pytest.fixture
+def mock_database():
+    """Create a mock database connection."""
+    with patch('src.package_name.services.user.get_db_connection') as mock:
+        yield mock
 
-### Cross-Platform Compatibility
-- **Conditional compilation**: Use `cfg` attributes for platform-specific code
-- **Path handling**: Use `std::path::Path` for cross-platform path operations
-- **Feature detection**: Use `cfg!` macro for runtime feature detection
+def test_create_user(user_service, mock_database):
+    """Test user creation."""
+    # Arrange
+    mock_database.return_value.save.return_value = True
+    user_data = {"name": "Alice", "email": "alice@example.com"}
+    
+    # Act
+    user = user_service.create_user(**user_data)
+    
+    # Assert
+    assert user.name == "Alice"
+    assert user.email == "alice@example.com"
+    mock_database.return_value.save.assert_called_once()
 
-```rust
-#[cfg(target_os = "windows")]
-fn platform_specific_function() {
-    // Windows-specific implementation
-}
-
-#[cfg(unix)]
-fn platform_specific_function() {
-    // Unix-specific implementation
-}
+@given(
+    name=st.text(min_size=1, max_size=50),
+    email=st.emails()
+)
+def test_user_validation(name, email):
+    """Test user validation with random inputs."""
+    user = User(name=name, email=email)
+    assert user.is_valid()
 ```
 
 ## Common Patterns & Anti-Patterns
 
 ### Do's
-- ✅ Use `Result<T, E>` for error handling
-- ✅ Leverage ownership and borrowing for memory safety
-- ✅ Use iterators instead of manual loops
-- ✅ Implement `Display` and `Debug` traits appropriately
-- ✅ Use `clippy` for code quality checks
-- ✅ Write comprehensive tests and documentation
-- ✅ Use `serde` for serialization needs
-- ✅ Follow Rust naming conventions
+- ✅ Use context managers for resource management
+- ✅ Follow PEP 8 style guide
+- ✅ Use type hints for better code clarity
+- ✅ Write comprehensive docstrings
+- ✅ Use virtual environments for isolation
+- ✅ Implement proper logging
+- ✅ Write tests before or alongside code
+- ✅ Use list/dict/set comprehensions appropriately
+- ✅ Handle exceptions specifically
 
 ### Don'ts
-- ❌ Don't use `unwrap()` in production code
-- ❌ Don't use `panic!` for normal error flow
-- ❌ Don't ignore compiler warnings
-- ❌ Don't use `unsafe` without careful consideration
-- ❌ Don't create unnecessary allocations
-- ❌ Don't write untested code
-- ❌ Don't use global mutable state
+- ❌ Don't use mutable default arguments
+- ❌ Don't use `import *`
+- ❌ Don't ignore exception handling
+- ❌ Don't use global variables unnecessarily
+- ❌ Don't write overly complex comprehensions
+- ❌ Don't modify lists while iterating
+- ❌ Don't use `eval()` or `exec()` with user input
+- ❌ Don't hardcode sensitive information
 
 ## Development Workflow
 
 ### Feature Development
-1. **Design API**: Define public interfaces and types first
-2. **Write tests**: Write failing tests before implementation
-3. **Implement incrementally**: Build in small, testable increments
-4. **Document thoroughly**: Include examples and edge cases
-5. **Commit atomically**: Make small, focused commits
+1. **Design first**: Define interfaces and data structures
+2. **Write tests**: Create failing tests (TDD approach)
+3. **Implement incrementally**: Build in small, testable chunks
+4. **Document**: Write docstrings and update documentation
+5. **Refactor**: Clean up code while tests pass
+6. **Review**: Self-review before submitting
 
 ### Code Review Checklist
-- [ ] Follows Rust idioms and conventions
-- [ ] Proper error handling with `Result` types
-- [ ] Comprehensive test coverage
-- [ ] Clear documentation and examples
-- [ ] No compiler warnings or clippy lints
-- [ ] Appropriate use of lifetimes and borrowing
-- [ ] Performance considerations addressed
+- [ ] Follows PEP 8 and project style guide
+- [ ] Has proper type hints
+- [ ] Includes comprehensive tests
+- [ ] Documentation is clear and complete
+- [ ] No linting errors (black, flake8, mypy pass)
+- [ ] Exception handling is appropriate
 - [ ] Security best practices followed
+- [ ] Performance considerations addressed
 
 ## Performance Considerations
 
-### Memory Management
-- **Zero-cost abstractions**: Leverage Rust's zero-cost abstractions
-- **Avoid unnecessary allocations**: Use string slices over owned strings when possible
-- **Iterator chains**: Use iterator adaptors for efficient data processing
-- **Profiling**: Use `perf` and `flamegraph` for performance analysis
+### Optimization Strategies
+- **Profiling**: Use `cProfile` and `line_profiler`
+- **Caching**: Use `functools.lru_cache` for expensive operations
+- **Lazy evaluation**: Use generators for large datasets
+- **Vectorization**: Use NumPy/Pandas for numerical operations
+- **Async I/O**: Use asyncio for concurrent I/O operations
 
-### Async Performance
-- **Async runtime**: Choose appropriate async runtime (tokio, async-std)
-- **Concurrent operations**: Use `join!` and `select!` for concurrency
-- **Buffering**: Use appropriate buffer sizes for I/O operations
-- **Connection pooling**: Implement connection pooling for database/network operations
+```python
+from functools import lru_cache
+from typing import Iterator, List
+import time
+
+@lru_cache(maxsize=128)
+def expensive_calculation(n: int) -> int:
+    """Cache expensive calculation results."""
+    time.sleep(0.1)  # Simulate expensive operation
+    return n ** 2
+
+def process_large_dataset(data: List[int]) -> Iterator[int]:
+    """Process large dataset using generators."""
+    for item in data:
+        if item % 2 == 0:
+            yield expensive_calculation(item)
+
+# Efficient processing
+results = list(process_large_dataset(range(1000)))
+```
 
 ## Security & Privacy
 
-### Data Handling
-- **Input validation**: Validate all external inputs
-- **Sanitization**: Sanitize data before processing
-- **Secure defaults**: Use secure defaults for configurations
-- **Secrets management**: Never hardcode secrets in source code
+### Security Best Practices
+- **Input validation**: Always validate and sanitize user input
+- **SQL injection**: Use parameterized queries
+- **Secrets management**: Use environment variables, never hardcode
+- **Dependencies**: Regularly update and audit dependencies
+- **Authentication**: Use established libraries (e.g., `passlib`)
 
-### Memory Safety
-- **Ownership system**: Rust's ownership prevents many security issues
-- **Bounds checking**: Array bounds are checked at runtime
-- **Type safety**: Use strong typing to prevent logic errors
-- **Unsafe code**: Minimize and carefully review any `unsafe` blocks
+```python
+import secrets
+import hashlib
+from typing import Tuple
+
+def generate_secure_token() -> str:
+    """Generate a cryptographically secure token."""
+    return secrets.token_urlsafe(32)
+
+def hash_password(password: str) -> Tuple[str, str]:
+    """Hash password with salt."""
+    salt = secrets.token_hex(32)
+    pwdhash = hashlib.pbkdf2_hmac(
+        'sha256',
+        password.encode('utf-8'),
+        salt.encode('utf-8'),
+        100000
+    )
+    return salt, pwdhash.hex()
+
+def verify_password(password: str, salt: str, pwdhash: str) -> bool:
+    """Verify password against hash."""
+    new_hash = hashlib.pbkdf2_hmac(
+        'sha256',
+        password.encode('utf-8'),
+        salt.encode('utf-8'),
+        100000
+    )
+    return new_hash.hex() == pwdhash
+```
 
 ## Tooling & Development Environment
 
 ### Essential Tools
-- **Rustfmt**: Code formatting with `cargo fmt`
-- **Clippy**: Linting with `cargo clippy`
-- **Cargo**: Build system and package manager
-- **Rust analyzer**: IDE integration for better development experience
+- **Black**: Code formatting
+- **isort**: Import sorting
+- **flake8**: Linting
+- **mypy**: Type checking
+- **pytest**: Testing
+- **coverage**: Code coverage
+- **pre-commit**: Git hooks
 
-### Code Search & Analysis
-- **Ripgrep**: Fast text search with `rg`
-  - `rg "pattern"` for basic search
-  - `rg -t rust "pattern"` to search only Rust files
-  - `rg -A 5 -B 5 "pattern"` for context lines
-- **IDE integration**: Configure your editor for Rust development
+### Development Setup
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-### Testing Tools
-- **Cargo test**: Built-in test runner
-- **Tarpaulin**: Code coverage analysis
-- **Criterion**: Benchmarking framework
-- **Proptest**: Property-based testing
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Install pre-commit hooks
+pre-commit install
+
+# Run all checks
+black src tests
+isort src tests
+flake8 src tests
+mypy src
+pytest --cov=src
+```
+
+### IDE Configuration
+- **VS Code**: Python extension with pylance
+- **PyCharm**: Professional or Community edition
+- **Configuration**: `.editorconfig`, `pyproject.toml`, `setup.cfg`
 
 ## Common Dependencies
 
 ### Core Libraries
-- **serde**: Serialization/deserialization
-- **tokio**: Async runtime
-- **anyhow/thiserror**: Error handling
-- **tracing**: Structured logging
-- **clap**: Command-line argument parsing
+- **requests/httpx**: HTTP client libraries
+- **pydantic**: Data validation
+- **click/typer**: CLI frameworks
+- **fastapi/flask**: Web frameworks
+- **sqlalchemy**: Database ORM
+- **celery**: Task queue
 
 ### Testing Libraries
-- **proptest**: Property-based testing
-- **mockall**: Mocking framework
-- **criterion**: Benchmarking
-- **tempfile**: Temporary file handling in tests
+- **pytest**: Testing framework
+- **pytest-cov**: Coverage plugin
+- **pytest-mock**: Mocking helpers
+- **hypothesis**: Property-based testing
+- **factory-boy**: Test fixtures
+- **responses**: Mock HTTP responses
+
+### Development Tools
+- **black**: Code formatter
+- **isort**: Import organizer
+- **flake8**: Linter
+- **mypy**: Type checker
+- **pre-commit**: Git hooks
+- **tox**: Test automation
 
 ## Example Prompts for Claude
 
 ### Implementing New Features
 ```
-Implement a REST API client for the GitHub API using reqwest and serde. 
-Include proper error handling, rate limiting, and comprehensive tests. 
-Add documentation with examples and integrate with the existing project structure.
+Implement a REST API endpoint for user management using FastAPI with:
+- CRUD operations for users
+- JWT authentication
+- Input validation with Pydantic models
+- Proper error handling and status codes
+- Comprehensive tests using pytest
+- OpenAPI documentation
 ```
 
 ### Fixing Issues
 ```
-Fix the lifetime issue in the parser module where the returned references 
-don't live long enough. The compiler error is in src/parser.rs:42. 
-Ensure proper lifetime annotations and consider using owned types where necessary.
+Fix the async database connection pool issue in src/db/connection.py 
+where connections are not being properly released. The error occurs 
+when running concurrent requests. Ensure proper context manager usage 
+and add tests to verify the fix.
 ```
 
 ### Refactoring
 ```
-Refactor the database module to use async/await pattern with tokio. 
-Convert the blocking database calls to async versions and update 
-all callers accordingly. Maintain backward compatibility where possible.
+Refactor the data processing module to use pandas DataFrames instead 
+of raw dictionaries. Maintain backward compatibility, improve performance 
+for large datasets, and add type hints throughout. Include benchmarks 
+comparing the old and new implementations.
 ```
 
 ### Performance Optimization
 ```
-Optimize the image processing pipeline for better performance. 
-Profile the current implementation and identify bottlenecks. 
-Consider using SIMD operations or parallel processing with rayon.
+Optimize the image processing pipeline in src/imaging/processor.py 
+for better performance. Profile the current implementation, identify 
+bottlenecks, and implement improvements using multiprocessing or 
+async I/O where appropriate. Target 50% performance improvement.
 ```
 
 ---
 
-This guidance ensures Claude generates idiomatic, safe, and performant Rust code that follows community best practices and modern Rust development patterns.
+This guidance ensures Claude generates idiomatic, maintainable, and performant Python code that follows community best practices and modern Python development patterns.

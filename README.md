@@ -1,237 +1,215 @@
-# Rust Claude Code Starter Template
+# Python Claude Code Starter Template
 
-A comprehensive starter template for Rust projects optimized for development with Claude Code. This template provides a solid foundation with best practices, tooling configurations, and development guidelines for building robust Rust applications.
+A modern Python project template optimized for development with Claude Code. This template provides a comprehensive foundation for Python applications with integrated AI assistance, modern tooling, and best practices.
 
-## 🚀 Quick Start
+## 🚀 Features
 
-1. **Clone this template**
+- **Claude Code Integration**: Pre-configured CLAUDE.md with Python-specific guidelines
+- **Modern Python Setup**: Support for Python 3.8+ with type hints and async capabilities
+- **Testing Framework**: pytest with coverage reporting and fixtures
+- **Code Quality**: Black, isort, flake8, mypy, and pre-commit hooks
+- **Documentation**: Sphinx-ready documentation with Google-style docstrings
+- **Dependency Management**: Poetry or pip with requirements files
+- **CI/CD Ready**: GitHub Actions workflows for testing and deployment
+- **Development Tools**: Justfile for common tasks and development workflows
+
+## 📋 Prerequisites
+
+- Python 3.8 or higher
+- pip or Poetry for dependency management
+- git for version control
+- (Optional) just command runner for using the Justfile
+
+## 🛠️ Quick Start
+
+1. **Clone this template**:
    ```bash
-   git clone https://github.com/Glen Baker/rust-claude-code.git python-claude-code
-   cd python-claude-code
+   git clone <your-repo-url>
+   cd <your-project-name>
    ```
 
-2. **Initialize your project**
+2. **Set up Python environment**:
    ```bash
-   # Remove template git history
-   rm -rf .git
-   git init
+   # Using venv
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    
-   # Create initial Cargo.toml
-   cargo init --name my-project
+   # Or using Poetry
+   poetry install
    ```
 
-3. **Install development dependencies**
+3. **Install dependencies**:
    ```bash
-   # Install rustfmt and clippy
-   rustup component add rustfmt clippy
+   # Using pip
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt
    
-   # Install cargo-watch for development
-   cargo install cargo-watch
+   # Or using Poetry
+   poetry install --with dev
+   ```
+
+4. **Run initial setup**:
+   ```bash
+   # Install pre-commit hooks
+   pre-commit install
    
-   # Install additional tools (optional)
-   cargo install cargo-tarpaulin  # Code coverage
-   cargo install cargo-audit      # Security audits
-   cargo install cargo-outdated   # Dependency updates
+   # Run tests to verify setup
+   pytest
    ```
 
 ## 📁 Project Structure
 
 ```
-python-claude-code/
+python-project/
 ├── src/                    # Source code
-│   ├── main.rs            # Binary entry point
-│   ├── lib.rs             # Library entry point
-│   └── modules/           # Application modules
-├── tests/                 # Integration tests
-├── benches/               # Benchmarks
-├── examples/              # Usage examples
+│   └── your_package/       # Your Python package
+│       ├── __init__.py
+│       ├── main.py        # Entry point
+│       └── modules/       # Additional modules
+├── tests/                 # Test files
+│   ├── __init__.py
+│   ├── conftest.py        # pytest fixtures
+│   └── test_*.py          # Test modules
 ├── docs/                  # Documentation
-├── .gitignore             # Git ignore rules
-├── CLAUDE.md              # Claude Code guidelines
-├── Cargo.toml             # Project manifest
-└── README.md              # This file
+├── scripts/               # Utility scripts
+├── .claude/               # Claude Code configuration
+│   └── commands/          # Custom commands
+├── .github/               # GitHub Actions workflows
+├── pyproject.toml         # Poetry configuration (if using Poetry)
+├── requirements.txt       # Production dependencies
+├── requirements-dev.txt   # Development dependencies
+├── setup.py              # Package setup (if distributing)
+├── .gitignore
+├── .pre-commit-config.yaml
+├── CLAUDE.md             # Claude Code guidelines
+├── Justfile              # Development commands
+└── README.md             # This file
 ```
 
-## 🛠️ Development Workflow
+## 🧰 Available Commands
 
-### Running the project
+If you have `just` installed, you can use these commands:
+
 ```bash
-# Build and run
-cargo run
-
-# Run with hot reloading
-cargo watch -x run
-
-# Run tests
-cargo test
-
-# Run with all features
-cargo run --all-features
+just test           # Run all tests
+just lint           # Run linters (black, isort, flake8, mypy)
+just format         # Format code with black and isort
+just coverage       # Run tests with coverage report
+just docs           # Build documentation
+just clean          # Clean up temporary files
+just install        # Install all dependencies
 ```
 
-### Code Quality
+Without `just`, you can run the underlying commands directly:
+
 ```bash
-# Format code
-cargo fmt
+# Testing
+pytest
+pytest --cov=src --cov-report=html
 
-# Run linter
-cargo clippy -- -D warnings
+# Linting and formatting
+black src tests
+isort src tests
+flake8 src tests
+mypy src
 
-# Check without building
-cargo check
-
-# Run security audit
-cargo audit
-```
-
-### Testing
-```bash
-# Run all tests
-cargo test
-
-# Run tests with output
-cargo test -- --nocapture
-
-# Run specific test
-cargo test test_name
-
-# Generate code coverage
-cargo tarpaulin --out Html
+# Documentation
+cd docs && make html
 ```
 
 ## 🤖 Claude Code Integration
 
-This template includes a comprehensive `CLAUDE.md` file that provides:
+This template includes a comprehensive CLAUDE.md file that provides:
 
-- **Architecture guidelines**: Error handling, concurrency patterns, and configuration management
-- **Code style standards**: Documentation, logging, and testing requirements
-- **Development patterns**: Best practices and anti-patterns specific to Rust
-- **Example prompts**: How to effectively communicate with Claude for various tasks
+- Python-specific coding guidelines and best practices
+- Common patterns and anti-patterns
+- Testing and documentation standards
+- Performance and security considerations
+- Example prompts for effective AI assistance
 
-### Key Features for Claude Development
+When using Claude Code with this template, Claude will automatically follow these guidelines to generate high-quality, consistent Python code.
 
-1. **Structured Error Handling**
-   - Uses `Result<T, E>` types consistently
-   - Includes examples with `anyhow` and `thiserror`
+## 🧪 Testing
 
-2. **Async/Await Support**
-   - Pre-configured for `tokio` runtime
-   - Examples for concurrent operations
-
-3. **Comprehensive Testing**
-   - Unit test templates
-   - Property-based testing with `proptest`
-   - Integration test structure
-
-4. **Documentation Standards**
-   - Rustdoc comment templates
-   - Example-driven documentation
-
-## 📦 Recommended Dependencies
-
-Add these to your `Cargo.toml` as needed:
-
-```toml
-[dependencies]
-# Async runtime
-tokio = { version = "1", features = ["full"] }
-
-# Error handling
-anyhow = "1"
-thiserror = "1"
-
-# Serialization
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-
-# Logging
-tracing = "0.1"
-tracing-subscriber = "0.3"
-
-# CLI
-clap = { version = "4", features = ["derive"] }
-
-# HTTP client
-reqwest = { version = "0.11", features = ["json"] }
-
-[dev-dependencies]
-# Testing
-proptest = "1"
-mockall = "0.11"
-criterion = "0.5"
-tempfile = "3"
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-Create a `.env` file for local development:
-
-```env
-# Application settings
-RUST_LOG=debug
-DATABASE_URL=postgresql://localhost/myapp
-API_KEY=your_api_key_here
-```
-
-### VS Code Settings
-
-Recommended `.vscode/settings.json`:
-
-```json
-{
-    "rust-analyzer.cargo.features": ["all"],
-    "rust-analyzer.checkOnSave.command": "clippy",
-    "editor.formatOnSave": true,
-    "[rust]": {
-        "editor.defaultFormatter": "rust-lang.rust-analyzer"
-    }
-}
-```
-
-## 🚀 Building for Production
+The project uses pytest for testing:
 
 ```bash
-# Build release version
-cargo build --release
+# Run all tests
+pytest
 
-# Run release version
-cargo run --release
+# Run with coverage
+pytest --cov=src --cov-report=term-missing
 
-# Create optimized binary
-RUSTFLAGS="-C target-cpu=native" cargo build --release
+# Run specific test file
+pytest tests/test_main.py
+
+# Run with verbose output
+pytest -v
 ```
 
-## 📚 Learning Resources
+## 📝 Code Style
 
-- [The Rust Programming Language Book](https://doc.rust-lang.org/book/)
-- [Rust by Example](https://doc.rust-lang.org/rust-by-example/)
-- [Async Programming in Rust](https://rust-lang.github.io/async-book/)
-- [The Rustonomicon](https://doc.rust-lang.org/nomicon/)
+This template enforces consistent code style using:
+
+- **Black**: Opinionated code formatter
+- **isort**: Import statement organizer
+- **flake8**: Style guide enforcement
+- **mypy**: Static type checker
+
+Pre-commit hooks automatically run these tools before each commit.
+
+## 🔧 Configuration Files
+
+- `pyproject.toml`: Project metadata and tool configuration (if using Poetry)
+- `setup.cfg`: Configuration for setuptools and tools like flake8
+- `.pre-commit-config.yaml`: Pre-commit hook configuration
+- `pytest.ini` or `pyproject.toml`: pytest configuration
+- `.gitignore`: Git ignore patterns for Python projects
+
+## 🚀 Deployment
+
+The template includes GitHub Actions workflows for:
+
+- Running tests on multiple Python versions
+- Checking code quality
+- Building and publishing packages
+- Deploying to various platforms
+
+## 📚 Documentation
+
+Documentation is set up using Sphinx:
+
+```bash
+# Build documentation
+cd docs
+make html
+
+# View documentation
+open _build/html/index.html  # On macOS
+# Or start a local server
+python -m http.server -d _build/html
+```
 
 ## 🤝 Contributing
 
-When contributing to this template:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests and linting (`just test && just lint`)
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
 
-1. Follow the guidelines in `CLAUDE.md`
-2. Ensure all tests pass: `cargo test`
-3. Run formatters: `cargo fmt`
-4. Check lints: `cargo clippy`
-5. Update documentation as needed
+## 📄 License
 
-## 📝 License
+This template is open source and available under the MIT License.
 
-This template is provided as-is for use in your own projects. Customize the license as needed for your specific use case.
+## 🙏 Acknowledgments
+
+- Built with best practices from the Python community
+- Optimized for Claude Code AI assistance
+- Inspired by modern Python project templates
 
 ---
 
-## 🎯 Next Steps
-
-1. **Customize `Cargo.toml`** with your project details
-2. **Update this README** with project-specific information
-3. **Review `CLAUDE.md`** for development guidelines
-4. **Set up CI/CD** with GitHub Actions or similar
-5. **Start building** your Rust application!
-
-Happy coding with Rust and Claude! 🦀🤖
+Happy coding! 🐍✨

@@ -1,45 +1,41 @@
 # Debug Command
 
-Runs comprehensive debugging analysis for the Gazelle eye tracking project, including tests, builds, and intelligent error analysis optimized for Claude Code workflows.
+Runs comprehensive debugging analysis for Python projects, including tests, linting, type checking, and intelligent error analysis optimized for Claude Code workflows.
 
 ## Usage
 This command performs automated debugging and provides structured error analysis for rapid issue resolution.
 
 ## Core Analysis Steps
-1. **Test Execution**: Comprehensive test suite with race detection and coverage
-2. **Build Verification**: Main prototype and all test applications
-3. **Static Analysis**: Code formatting, linting, and quality checks
+1. **Test Execution**: Comprehensive test suite with coverage analysis
+2. **Code Quality**: Formatting, linting, and static analysis
+3. **Type Checking**: mypy static type analysis
 4. **Error Intelligence**: Advanced error categorization and solution suggestions
-5. **Dependency Validation**: Go module integrity and OpenCV prerequisites
+5. **Dependency Validation**: Package integrity and version compatibility
 
 ## Test Execution Strategy
 ```bash
 # Progressive test execution with detailed output
-just test          # Basic unit tests with verbose output
-just test-race     # Race condition detection for UI safety
-just test-cover    # Coverage analysis with threshold reporting
+pytest -v                    # Basic unit tests with verbose output
+pytest --cov=src            # Coverage analysis with detailed report
+pytest -x                   # Stop on first failure for quick debugging
+pytest -k "test_specific"   # Run specific test patterns
 ```
 
-## Build Verification Pipeline
-```bash
-# Core prototype and test applications
-just build         # Main gazelle-prototype executable
-just test-apps     # All cmd/* test applications for component validation
-just deps          # Go module verification and cleanup
-go mod verify      # Module integrity check
-```
-
-## Code Quality Analysis
+## Code Quality Pipeline
 ```bash
 # Automated formatting and linting
-just fmt           # goimports + go fmt with project-wide application
-just lint          # golangci-lint with Gazelle-specific rules
+black src tests             # Code formatting
+isort src tests            # Import organization
+flake8 src tests           # Style guide enforcement
+mypy src                   # Static type checking
 ```
 
 ## Complete CI Pipeline
 ```bash
 # Full continuous integration workflow
-just ci            # Sequential: fmt → lint → test → test-race
+just ci                    # Sequential: format → lint → type-check → test
+# Or manually:
+black . && isort . && flake8 . && mypy . && pytest
 ```
 
 ## Advanced Error Analysis & Claude Code Integration
@@ -48,18 +44,18 @@ just ci            # Sequential: fmt → lint → test → test-race
 The debug command provides structured error analysis optimized for Claude Code workflows:
 
 1. **Context-Aware Pattern Recognition**:
-   - **Race Conditions**: Detects unsafe UI operations, missing `fyne.Do()` calls
-   - **OpenCV Integration**: gocv import issues, camera device access failures  
-   - **Go Module Issues**: Missing dependencies, version conflicts, replace directives
-   - **Fyne UI Errors**: Threading violations, resource lifecycle problems
+   - **Import Errors**: Missing dependencies, circular imports, module not found
+   - **Type Errors**: Type hint mismatches, missing annotations, incompatible types
+   - **Async Issues**: Missing await, synchronous code in async context
    - **Test Failures**: Assertion analysis with suggested fixes
+   - **Syntax Errors**: Common Python gotchas and fixes
 
 2. **Project-Specific Error Categories**:
-   - **Camera Interface**: Device access, OpenCV cascade loading, frame processing
-   - **Eye Tracking**: Algorithm convergence, calibration data validation
-   - **UI Thread Safety**: Concurrent access to Fyne widgets, goroutine management
-   - **System Integration**: robotgo cursor control, platform-specific permissions
-   - **Performance**: Memory leaks in video processing, frame rate optimization
+   - **API Integration**: Request/response validation, authentication issues
+   - **Database Operations**: Connection failures, query errors, migration issues
+   - **Async/Await**: Event loop problems, coroutine management
+   - **Configuration**: Environment variable issues, settings validation
+   - **Performance**: Memory leaks, slow queries, inefficient algorithms
 
 3. **Claude Code Optimized Diagnostics**:
    - **File Location**: Precise `file_path:line_number` references for easy navigation
@@ -70,79 +66,83 @@ The debug command provides structured error analysis optimized for Claude Code w
 ### Automated Recovery Actions
 ```bash
 # Safe automatic fixes applied in sequence
-just deps          # Go module cleanup: download + tidy
-just fmt           # Code formatting: goimports + go fmt  
-go mod verify      # Module integrity validation
-just check-prereqs # OpenCV and cascade file verification
+pip install -r requirements.txt    # Dependency installation
+black src tests                    # Code formatting
+isort src tests                    # Import organization
+pip check                         # Dependency conflict detection
 ```
 
 ## Example Debug Session Output
 
 ```
-🔍 Gazelle Debug Analysis - Claude Code Optimized
+🔍 Python Debug Analysis - Claude Code Optimized
 
-=== BUILD VERIFICATION ===
-✅ just build: gazelle-prototype built successfully
-✅ just test-apps: All 6 test applications compiled
-❌ just deps: go mod tidy detected inconsistencies
+=== CODE QUALITY ===
+✅ black: All files formatted
+❌ isort: 3 files need import sorting
+✅ flake8: No style violations
+❌ mypy: 2 type errors found
 
 === TEST EXECUTION ===  
-✅ just test: 24/24 tests passed
-❌ just test-race: Race condition detected
-   📍 internal/ui/calibration_window.go:45 - concurrent widget access
-✅ just test-cover: 87.3% coverage (target: 80%+)
+✅ pytest: 48/50 tests passed
+❌ Failed: test_user_authentication, test_data_validation
+✅ Coverage: 92.3% (target: 90%+)
 
-=== STATIC ANALYSIS ===
-❌ just lint: 2 issues found
-   📍 internal/eyetracking/detector.go:123 - unused variable 'threshold'
-   📍 cmd/integrated-ui-test/main.go:67 - potential nil pointer dereference
+=== DEPENDENCY CHECK ===
+✅ pip check: No conflicts found
+⚠️  outdated: 3 packages have newer versions available
 
 🧠 INTELLIGENT ERROR ANALYSIS
 
-1. **Race Condition** - internal/ui/calibration_window.go:45
-   🔍 Pattern: Unsafe UI operation from background goroutine
-   💡 Fix: Wrap in fyne.Do() for thread safety
-   📝 Code: `fyne.Do(func() { window.Close() })`
-   🔎 Search: `rg "window\.Close\(\)" internal/ui/`
+1. **Type Error** - src/services/user_service.py:45
+   🔍 Pattern: Incompatible return type
+   💡 Fix: Change return type hint from `str` to `Optional[str]`
+   📝 Code: `def get_user(id: int) -> Optional[str]:`
+   🔎 Search: `rg "def get_user" src/services/`
 
-2. **Unused Variable** - internal/eyetracking/detector.go:123  
-   🔍 Pattern: Variable declared but not used in scope
-   💡 Fix: Remove unused variable or implement usage
-   🔎 Search: `rg "threshold.*:=" internal/eyetracking/`
+2. **Import Order** - src/api/routes.py:1-10
+   🔍 Pattern: Incorrect import grouping
+   💡 Fix: Run `isort src/api/routes.py`
+   🔎 Search: `rg "^import|^from" src/api/routes.py`
 
-3. **Nil Pointer Risk** - cmd/integrated-ui-test/main.go:67
-   🔍 Pattern: Potential access to nil pointer in camera initialization
-   💡 Fix: Add nil check before camera.Start()
-   🔎 Search: `rg "camera\.Start" cmd/`
+3. **Test Failure** - tests/test_authentication.py:23
+   🔍 Pattern: Mock not properly configured
+   💡 Fix: Add return_value to mock: `mock_auth.return_value = True`
+   🔎 Search: `rg "mock_auth" tests/`
+
+4. **Async Warning** - src/utils/cache.py:67
+   🔍 Pattern: Synchronous operation in async function
+   💡 Fix: Use `await asyncio.sleep(1)` instead of `time.sleep(1)`
+   🔎 Search: `rg "time\.sleep" src/`
 
 🔧 AUTOMATED RECOVERY
-✅ just deps: Module dependencies synchronized  
-✅ just fmt: Code formatting applied
-✅ go mod verify: Module integrity confirmed
-✅ just check-prereqs: OpenCV cascades verified
+✅ black: Code formatting applied
+✅ isort: Import order fixed
+✅ pip install: All dependencies installed
+✅ pre-commit: Hooks installed and passing
 
 🎯 CLAUDE CODE ACTIONS
-1. Edit internal/ui/calibration_window.go:45 - Add fyne.Do() wrapper
-2. Edit internal/eyetracking/detector.go:123 - Remove unused variable  
-3. Edit cmd/integrated-ui-test/main.go:67 - Add nil check
-4. Run: `just ci` to verify all fixes
-5. Test: `just prototype` to validate eye tracking functionality
+1. Edit src/services/user_service.py:45 - Fix return type hint
+2. Edit tests/test_authentication.py:23 - Configure mock properly
+3. Edit src/utils/cache.py:67 - Use async sleep
+4. Run: `pytest tests/test_authentication.py` to verify fix
+5. Run: `mypy src` to confirm type errors resolved
 
 📊 PROJECT HEALTH
-- Build Status: ⚠️  Requires fixes (3 issues)
-- Test Coverage: ✅ 87.3% (exceeds 80% target)
-- Dependencies: ✅ All modules verified
-- Prerequisites: ✅ OpenCV + cascades ready
+- Code Quality: ⚠️  Requires fixes (4 issues)
+- Test Coverage: ✅ 92.3% (exceeds 90% target)
+- Dependencies: ✅ All installed, 3 outdated
+- Type Safety: ⚠️  2 type errors to fix
 ```
 
-## Gazelle-Specific Intelligence
+## Python-Specific Intelligence
 
-### Eye Tracking Domain Expertise
-- **Camera Integration**: Validates OpenCV camera device access and cascade loading
-- **UI Thread Safety**: Detects Fyne widget access violations and missing `fyne.Do()` calls  
-- **Calibration Logic**: Verifies eye tracking calibration data and algorithm convergence
-- **System Permissions**: Checks macOS camera/accessibility permissions for robotgo
-- **Performance Patterns**: Identifies memory leaks in video frame processing loops
+### Common Python Patterns
+- **Import Management**: Detects circular imports, missing __init__.py files
+- **Type Safety**: Validates type hints, suggests appropriate annotations
+- **Async/Await**: Identifies blocking operations in async code
+- **Memory Management**: Detects common memory leak patterns
+- **Security Issues**: SQL injection risks, hardcoded secrets
 
 ### Claude Code Workflow Optimization
 - **Precise Navigation**: `file_path:line_number` format for instant IDE navigation
@@ -150,46 +150,81 @@ just check-prereqs # OpenCV and cascade file verification
 - **Batch Operations**: Parallelizable fix suggestions for efficient execution
 - **Context Preservation**: Maintains error context across multiple debugging iterations
 
-### Justfile Command Alignment
-All commands verified against current `justfile` structure:
-- ✅ `just build` → `bin/gazelle-prototype` 
-- ✅ `just test-apps` → All 6 cmd/* applications
-- ✅ `just ci` → Complete fmt/lint/test pipeline
-- ✅ `just check-prereqs` → OpenCV + cascade validation
-- ✅ `just prototype` → Main development workflow
+### Common Command Alignment
+All commands work with standard Python tooling:
+- ✅ `pytest` → Test execution with coverage
+- ✅ `black` → Code formatting
+- ✅ `isort` → Import organization
+- ✅ `flake8` → Linting
+- ✅ `mypy` → Type checking
 
 ## Prerequisites & Dependencies
 
 ### Required Tools
 ```bash
-# Core Go toolchain
-go version          # Go 1.19+ required
-just --version      # Just command runner
+# Core Python toolchain
+python --version           # Python 3.8+ required
+pip --version             # Package installer
+pytest --version          # Testing framework
 
-# Optional but recommended
-golangci-lint --version    # Static analysis
-goimports --version        # Import formatting
+# Code quality tools
+black --version           # Code formatter
+isort --version          # Import sorter
+flake8 --version         # Linter
+mypy --version           # Type checker
 ```
 
-### Project Dependencies  
+### Common Project Dependencies
 ```bash
-# Computer vision and UI
-github.com/hybridgroup/gocv  # OpenCV bindings
-fyne.io/fyne/v2              # Cross-platform GUI
-github.com/go-vgo/robotgo    # System cursor control
+# Web frameworks
+fastapi                   # Modern web API framework
+flask                    # Lightweight web framework
+django                   # Full-featured web framework
 
-# Development and testing
-github.com/sirupsen/logrus   # Structured logging
-github.com/stretchr/testify  # Testing framework
+# Data and validation
+pydantic                 # Data validation using type hints
+sqlalchemy               # Database toolkit
+pandas                   # Data analysis
+
+# Testing and development
+pytest                   # Testing framework
+pytest-cov              # Coverage plugin
+pytest-mock             # Mocking support
+hypothesis              # Property-based testing
 ```
 
-### System Requirements
+### Virtual Environment Setup
 ```bash
-# macOS specific
-brew install opencv pkg-config  # OpenCV + pkg-config
-# Camera and accessibility permissions required
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Cascade files (auto-installed via just dev-setup)
-assets/cascades/haarcascade_frontalface_default.xml
-assets/cascades/haarcascade_eye.xml
+# Install dependencies
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+
+# Install pre-commit hooks
+pre-commit install
 ```
+
+## Error Categories and Solutions
+
+### Import Errors
+- **ModuleNotFoundError**: Check virtual environment activation and installed packages
+- **ImportError**: Verify module structure and __init__.py files
+- **Circular Import**: Restructure code to break dependency cycles
+
+### Type Errors
+- **Type hint mismatch**: Update function signatures to match implementation
+- **Missing annotations**: Add type hints to function parameters and returns
+- **Generic type issues**: Use proper typing imports (List, Dict, Optional)
+
+### Test Failures
+- **Assertion errors**: Review test logic and expected values
+- **Fixture issues**: Check pytest fixture scope and dependencies
+- **Mock configuration**: Ensure mocks have proper return values and side effects
+
+### Performance Issues
+- **Slow tests**: Use pytest-benchmark for performance testing
+- **Memory leaks**: Profile with memory_profiler
+- **Inefficient queries**: Use logging to identify slow database operations
