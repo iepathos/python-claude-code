@@ -23,10 +23,10 @@ COMMIT_TYPE: auto-detected from message or can be specified (feat/fix/docs/style
      - Execute `just test` to run unit tests
      - Execute `just check` to run type checking
    - If justfile doesn't exist, fall back to individual commands:
-     - Execute `cargo fmt --check` to check code formatting
-     - Execute `cargo clippy` to run linter
-     - Execute `cargo check` to ensure code compiles
-     - Execute `cargo test` to ensure tests pass
+     - Execute `black --check .` to check code formatting
+     - Execute `ruff check .` to run linter
+     - Execute `mypy .` to run type checking
+     - Execute `pytest` to ensure tests pass
    - If any validation fails, exit with error and details
 
 3. Optional CI skip flag:
@@ -48,7 +48,7 @@ COMMIT_TYPE: auto-detected from message or can be specified (feat/fix/docs/style
 
 2. Auto-generate commit message if not provided:
    - Analyze `git diff --cached` to understand what changed
-   - Look for file patterns: `*.rs` (code), `*.md` (docs), `*test*` (tests), etc.
+   - Look for file patterns: `*.py` (code), `*.md` (docs), `*test*` (tests), etc.
    - Identify key changes: new functions, error fixes, documentation updates
    - Generate descriptive message based on most significant changes
    - Example: "add error handling to camera initialization" or "update README with installation steps"
@@ -103,13 +103,13 @@ COMMIT_TYPE: auto-detected from message or can be specified (feat/fix/docs/style
 
 ## Auto-generation Examples (no message provided)
 
-- New Rust files added → `feat: add new camera interface implementation`
+- New Python files added → `feat: add new camera interface implementation`
 - Error handling added → `fix: add error handling to camera initialization`
 - README.md modified → `docs: update README with installation instructions`
 - Test files added → `test: add unit tests for pupil detection`
-- Code formatting changes → `style: format code with cargo fmt`
+- Code formatting changes → `style: format code with black`
 - Function extracted → `refactor: extract common camera utilities`
-- Dependencies updated → `chore: update dependencies in Cargo.toml`
+- Dependencies updated → `chore: update dependencies in pyproject.toml`
 
 ## Error Handling
 
@@ -119,10 +119,10 @@ COMMIT_TYPE: auto-detected from message or can be specified (feat/fix/docs/style
   - `just fmt` failure: "💡 Code formatting failed. Try running: just fmt"
   - `just lint` failure: "💡 Linting failed. Try: just lint to see specific issues"
   - `just test` failure: "💡 Unit tests failed. Try: just test to see which tests failed"
-  - `just check` failure: "💡 Type checking failed. Try: just check to see compilation errors"
-- If justfile not found: "⚠️ Justfile not found, using fallback Cargo commands"
-- If build fails: "Build failed: {error details}"
+  - `just check` failure: "💡 Type checking failed. Try: just check to see type errors"
+- If justfile not found: "⚠️ Justfile not found, using fallback Python commands"
 - If tests fail: "Tests failed: {error details}"
+- If type checking fails: "Type checking failed: {error details}"
 - If git commit fails: "Commit failed: {error details}"
 
 ## Difference from /commit-spec

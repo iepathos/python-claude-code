@@ -47,14 +47,14 @@ Create a comprehensive specification file at `/specs/{number}-{feature-name}.md`
    - Success criteria
 
 3. **API/Interface Design**
-   - Function signatures and types
-   - Public interfaces and structs
+   - Function signatures and type hints
+   - Public interfaces and classes
    - Method specifications with parameters and return values
    - Error handling patterns
 
 4. **File and Package Structure**
-   - Where code should be located (internal/, cmd/, etc.)
-   - Package organization and naming
+   - Where code should be located (src/, tests/, etc.)
+   - Package/module organization and naming
    - File naming conventions
    - Import structure
 
@@ -86,10 +86,10 @@ Create a comprehensive specification file at `/specs/{number}-{feature-name}.md`
    - Config options to expose
    - Default values
    - Environment variables
-   - Viper integration
+   - Configuration file formats (YAML, JSON, etc.)
 
 10. **Documentation**
-    - GoDoc requirements
+    - Docstring requirements
     - README updates needed
     - Example usage
     - API documentation
@@ -97,7 +97,7 @@ Create a comprehensive specification file at `/specs/{number}-{feature-name}.md`
 ### Phase 3: Validation and Finalization
 
 1. Ensure the spec follows project conventions:
-   - Uses Go idioms and patterns
+   - Uses Python idioms and patterns
    - Follows naming conventions from CLAUDE.md
    - Integrates with existing architecture
    - Includes proper error handling
@@ -177,7 +177,7 @@ The command will create:
 
 The generated spec must be:
 - Detailed enough for Claude Code to implement without ambiguity
-- Following Go idioms and project conventions
+- Following Python idioms and project conventions
 - Compatible with existing codebase architecture
 - Testable and maintainable
 - Complete with all necessary sections filled out

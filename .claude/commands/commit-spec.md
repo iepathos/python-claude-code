@@ -25,11 +25,12 @@ COMMIT_MESSAGE: $ARGUMENTS (optional, will auto-generate if not provided)
      - Execute `just fmt` to format code
      - Execute `just lint` to run linter
      - Execute `just test` to run unit tests
-     - Execute `just test-race` to run race detection tests
+     - Execute `just check` to run type checking
    - If justfile doesn't exist, fall back to individual commands:
-     - Execute `go mod tidy` to ensure dependencies are clean
-     - Execute `go build ./...` to ensure code compiles
-     - Execute `go test ./...` to ensure tests pass
+     - Execute `black --check .` to check code formatting
+     - Execute `ruff check .` to run linter
+     - Execute `mypy .` to run type checking
+     - Execute `pytest` to ensure tests pass
    - If any validation fails, exit with error and details
 
 4. Optional CI skip flag:
@@ -83,9 +84,9 @@ COMMIT_MESSAGE: $ARGUMENTS (optional, will auto-generate if not provided)
   - `just fmt` failure: "💡 Code formatting failed. Try running: just fmt"
   - `just lint` failure: "💡 Linting failed. Try: just lint to see specific issues"
   - `just test` failure: "💡 Unit tests failed. Try: just test to see which tests failed"
-  - `just test-race` failure: "💡 Race condition detected. Try: just test-race to see race conditions"
-- If justfile not found: "⚠️ Justfile not found, using fallback Go commands"
-- If build fails: "Build failed: {error details}"
+  - `just check` failure: "💡 Type checking failed. Try: just check to see type errors"
+- If justfile not found: "⚠️ Justfile not found, using fallback Python commands"
 - If tests fail: "Tests failed: {error details}"
+- If type checking fails: "Type checking failed: {error details}"
 - If git commit fails: "Commit failed: {error details}"
 - If unable to update spec status: "Warning: Could not update specs/000-specs-status.md for {SPEC_NAME}"
